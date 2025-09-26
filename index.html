@@ -8,13 +8,20 @@
 *{margin:0;padding:0;box-sizing:border-box;-webkit-user-select:none;-moz-user-select:none;user-select:none;}
 html{overflow:hidden;touch-action:none;height:100%;}
 body{
-    background:#0a0a0a;color:#fff;
     font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;
     height:100vh;display:flex;flex-direction:column;justify-content:center;align-items:center;
     gap:3rem;padding:1rem;overflow:hidden;position:fixed;width:100%;top:0;left:0;
+    transition: background 0.3s, color 0.3s;
 }
-body.correct{background:#001a00;transition:background 0.1s ease;}
-body.wrong{background:#1a0000;transition:background 0.1s ease;}
+body.day{background:#f0f0f0;color:#111;}
+body.night{background:#0a0a0a;color:#fff;}
+body.correct{transition:background 0.1s ease;}
+body.wrong{transition:background 0.1s ease;}
+body.correct.day{background:#d4f0d4;}
+body.wrong.day{background:#f0d4d4;}
+body.correct.night{background:#001a00;}
+body.wrong.night{background:#1a0000;}
+
 #controls{
     position:absolute;top:1rem;left:1rem;right:1rem;
     display:flex;flex-wrap:wrap;justify-content:center;gap:0.5rem;
@@ -22,7 +29,7 @@ body.wrong{background:#1a0000;transition:background 0.1s ease;}
 }
 #controls:hover{opacity:0.8;}
 .btn{
-    background:none;border:1px solid #333;color:#fff;padding:0.5rem 0.8rem;
+    background:none;border:1px solid #333;color:inherit;padding:0.5rem 0.8rem;
     border-radius:6px;font-size:1rem;cursor:pointer;transition:all 0.2s;
     min-width:80px;text-align:center;
 }
@@ -34,7 +41,7 @@ body.wrong{background:#1a0000;transition:background 0.1s ease;}
 #question{
     font-size:clamp(1.5rem,8vw,3rem);
     font-weight:300;text-align:center;max-width:90vw;
-    opacity:0;transform:translateY(-10px);animation:fadeIn 0.3s ease forwards;
+    opacity:0;transform:translateY(-10px);animation:fadeIn 0.3s ease forwards;cursor:pointer;
 }
 @keyframes fadeIn{to{opacity:1;transform:translateY(0);}}
 #answer{
@@ -43,11 +50,10 @@ body.wrong{background:#1a0000;transition:background 0.1s ease;}
     text-align:center;width:90vw;max-width:350px;border-radius:6px;
     outline:none;-webkit-appearance:none;-moz-appearance:textfield;user-select:text;
 }
-#answer:focus{border-color:#444;}
 #answer.correct{border-color:#3a3;}
 #answer.wrong{border-color:#a33;animation:shake 0.2s ease;}
 @keyframes shake{0%,100%{transform:translateX(0);}50%{transform:translateX(-3px);}}
-#streak{position:absolute;bottom:1.5rem;font-size:1rem;color:#fff;font-weight:300;}
+#streak{position:absolute;bottom:1.5rem;font-size:1rem;font-weight:300;}
 #streak.active{color:#ffa;}
 #streak.fire{color:#fa5;animation:pulse 1s ease infinite;}
 @keyframes pulse{0%,100%{opacity:1;}50%{opacity:0.7;}}
@@ -73,13 +79,21 @@ body.wrong{background:#1a0000;transition:background 0.1s ease;}
     </select>
 </div>
 
-<div id="question"></div>
+<div id="question" title="Tap to skip"></div>
 <input type="text" id="answer" autocomplete="off">
 <div id="streak">0</div>
-<div class="hint">Typing auto-checks</div>
+<div class="hint">Typing auto-checks. Tap question to skip.</div>
 
 <script>
 let currentMode='basic', streak=0, correctAnswer, isNumericAnswer=true, mulDigits=3;
+
+// Set day/night theme
+function updateTheme(){
+    const hour=new Date().getHours();
+    document.body.classList.remove('day','night');
+    document.body.classList.add(hour>=6 && hour<19?'day':'night');
+}
+updateTheme();
 
 const modes={
     basic:()=>{ 
@@ -126,16 +140,22 @@ function flashResult(correct){
     setTimeout(()=>document.body.classList.remove('correct','wrong'),150); 
 }
 
-// Instant validation for all modes
-document.getElementById('answer').addEventListener('input',function(){
+// Input instant validation
+const answerInput=document.getElementById('answer');
+answerInput.addEventListener('input',function(){
     const val=this.value.trim();
     if(val==='') return;
-    if(isNumericAnswer && val.length < correctAnswer.toString().length) return; // wait until full digits
+    if(isNumericAnswer && val.length < correctAnswer.toString().length) return;
     if(checkAnswer(val)){
         flashResult(true); updateStreak(true); this.value=''; generateQuestion();
     } else {
         flashResult(false); updateStreak(false); this.value='';
     }
+});
+
+// Tap question to skip
+document.getElementById('question').addEventListener('click',()=>{
+    generateQuestion();
 });
 
 // Mode buttons
@@ -145,22 +165,22 @@ document.querySelectorAll('[data-mode]').forEach(btn=>{
         this.classList.add('active');
         currentMode=this.dataset.mode;
         document.getElementById('mul-digits').style.display=currentMode==='mul'?'inline-block':'none';
-        streak=0; updateStreak(false); generateQuestion(); document.getElementById('answer').focus();
+        streak=0; updateStreak(false); generateQuestion(); answerInput.focus();
     });
 });
 
 // Multiplication digits selector
-document.getElementById('mul-digits').addEventListener('change',function(){ mulDigits=parseInt(this.value); generateQuestion(); document.getElementById('answer').focus(); });
+document.getElementById('mul-digits').addEventListener('change',function(){ mulDigits=parseInt(this.value); generateQuestion(); answerInput.focus(); });
 
 // Mobile optimizations
 document.addEventListener('touchmove', e=>e.preventDefault(),{passive:false});
 let lastTouchEnd=0;
 document.addEventListener('touchend',e=>{ const now=Date.now(); if(now-lastTouchEnd<=300) e.preventDefault(); lastTouchEnd=now; }, false);
-document.getElementById('answer').addEventListener('blur', e=>{ if(!e.relatedTarget || !e.relatedTarget.classList.contains('btn')) setTimeout(()=>this.focus(),10); });
+answerInput.addEventListener('blur', e=>{ if(!e.relatedTarget || !e.relatedTarget.classList.contains('btn')) setTimeout(()=>answerInput.focus(),10); });
 
 // Initialize
 generateQuestion();
-document.getElementById('answer').focus();
+answerInput.focus();
 </script>
 
 </body>
