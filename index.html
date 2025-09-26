@@ -1,187 +1,364 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-<title>Math Workout</title>
-<style>
-*{margin:0;padding:0;box-sizing:border-box;-webkit-user-select:none;-moz-user-select:none;user-select:none;}
-html{overflow:hidden;touch-action:none;height:100%;}
-body{
-    font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;
-    height:100vh;display:flex;flex-direction:column;justify-content:center;align-items:center;
-    gap:3rem;padding:1rem;overflow:hidden;position:fixed;width:100%;top:0;left:0;
-    transition: background 0.3s, color 0.3s;
-}
-body.day{background:#f0f0f0;color:#111;}
-body.night{background:#0a0a0a;color:#fff;}
-body.correct{transition:background 0.1s ease;}
-body.wrong{transition:background 0.1s ease;}
-body.correct.day{background:#d4f0d4;}
-body.wrong.day{background:#f0d4d4;}
-body.correct.night{background:#001a00;}
-body.wrong.night{background:#1a0000;}
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Math Workout</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
 
-#controls{
-    position:absolute;top:1rem;left:1rem;right:1rem;
-    display:flex;flex-wrap:wrap;justify-content:center;gap:0.5rem;
-    opacity:0.15;transition:opacity 0.3s;
-}
-#controls:hover{opacity:0.8;}
-.btn{
-    background:none;border:1px solid #333;color:inherit;padding:0.5rem 0.8rem;
-    border-radius:6px;font-size:1rem;cursor:pointer;transition:all 0.2s;
-    min-width:80px;text-align:center;
-}
-.btn:hover,.btn.active{border-color:#555;color:#ffa;}
-#mul-digits{
-    font-size:1rem;padding:0.4rem 0.6rem;display:none;
-    border-radius:6px;background:#111;color:#fff;border:1px solid #333;
-}
-#question{
-    font-size:clamp(1.5rem,8vw,3rem);
-    font-weight:300;text-align:center;max-width:90vw;
-    opacity:0;transform:translateY(-10px);animation:fadeIn 0.3s ease forwards;cursor:pointer;
-}
-@keyframes fadeIn{to{opacity:1;transform:translateY(0);}}
-#answer{
-    background:#111;border:1px solid #333;color:#fff;
-    font-size:clamp(1.2rem,6vw,2rem);padding:1rem 1.5rem;
-    text-align:center;width:90vw;max-width:350px;border-radius:6px;
-    outline:none;-webkit-appearance:none;-moz-appearance:textfield;user-select:text;
-}
-#answer.correct{border-color:#3a3;}
-#answer.wrong{border-color:#a33;animation:shake 0.2s ease;}
-@keyframes shake{0%,100%{transform:translateX(0);}50%{transform:translateX(-3px);}}
-#streak{position:absolute;bottom:1.5rem;font-size:1rem;font-weight:300;}
-#streak.active{color:#ffa;}
-#streak.fire{color:#fa5;animation:pulse 1s ease infinite;}
-@keyframes pulse{0%,100%{opacity:1;}50%{opacity:0.7;}}
-.hint{position:absolute;bottom:0.5rem;right:1rem;font-size:0.8rem;color:#888;}
-@media screen and (max-width:500px){
-    #controls{gap:0.3rem;}
-    .btn{font-size:1rem;min-width:70px;}
-    #question{font-size:clamp(1.2rem,8vw,2.5rem);}
-    #answer{font-size:clamp(1rem,5vw,1.8rem);}
-}
-</style>
+        body {
+            background: #0a0a0a;
+            color: #ffffff;
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+            height: 100vh;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            gap: 2rem;
+            padding: 1rem;
+            transition: background 0.3s ease;
+        }
+
+        body.correct {
+            background: #0a1a0a;
+        }
+
+        #settings {
+            position: absolute;
+            top: 1rem;
+            right: 1rem;
+            display: flex;
+            gap: 0.5rem;
+            opacity: 0.3;
+            transition: opacity 0.2s;
+        }
+
+        #settings:hover {
+            opacity: 1;
+        }
+
+        .digit-selector, .op-selector {
+            background: #1a1a1a;
+            border: 1px solid #333;
+            color: #888;
+            padding: 0.3rem 0.5rem;
+            border-radius: 4px;
+            font-size: 0.9rem;
+            cursor: pointer;
+            outline: none;
+        }
+
+        .digit-selector:focus, .op-selector:focus {
+            border-color: #555;
+        }
+
+        #question {
+            font-size: clamp(2.5rem, 8vw, 4rem);
+            font-weight: 300;
+            letter-spacing: 0.05em;
+            transition: transform 0.2s ease;
+        }
+
+        #question.new {
+            animation: fadeIn 0.3s ease;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(-10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        #answer {
+            background: #1a1a1a;
+            border: 1px solid #333;
+            color: #ffffff;
+            font-size: clamp(1.5rem, 5vw, 2.5rem);
+            padding: 1rem 1.5rem;
+            text-align: center;
+            width: min(300px, 80vw);
+            border-radius: 8px;
+            outline: none;
+            transition: all 0.2s ease;
+        }
+
+        #answer:focus {
+            border-color: #555;
+        }
+
+        #answer.wrong {
+            background: #3a1a1a;
+            border-color: #aa3333;
+            animation: shake 0.3s ease;
+        }
+
+        #answer.correct {
+            border-color: #33aa33;
+        }
+
+        @keyframes shake {
+            0%, 100% { transform: translateX(0); }
+            25% { transform: translateX(-5px); }
+            75% { transform: translateX(5px); }
+        }
+
+        #streak {
+            position: absolute;
+            bottom: 2rem;
+            font-size: 0.9rem;
+            color: #333;
+            transition: all 0.3s ease;
+        }
+
+        #streak.active {
+            color: #666;
+        }
+
+        #streak.high {
+            color: #aa8833;
+            font-weight: 500;
+        }
+
+        #time {
+            position: absolute;
+            top: 1rem;
+            left: 1rem;
+            font-size: 0.8rem;
+            color: #333;
+            font-variant-numeric: tabular-nums;
+        }
+
+        .key-hint {
+            position: absolute;
+            bottom: 0.5rem;
+            right: 1rem;
+            font-size: 0.7rem;
+            color: #222;
+        }
+
+        /* Hide spinner arrows */
+        #answer::-webkit-outer-spin-button,
+        #answer::-webkit-inner-spin-button {
+            -webkit-appearance: none;
+            margin: 0;
+        }
+        #answer[type=number] {
+            -moz-appearance: textfield;
+        }
+    </style>
 </head>
 <body>
+    <div id="time"></div>
+    
+    <div id="settings">
+        <select id="op" class="op-selector">
+            <option value="×">×</option>
+            <option value="+">+</option>
+            <option value="-">−</option>
+            <option value="÷">÷</option>
+            <option value="mix">mix</option>
+        </select>
+        <select id="digits1" class="digit-selector">
+            <option value="1">1d</option>
+            <option value="2">2d</option>
+            <option value="3">3d</option>
+        </select>
+        <select id="digits2" class="digit-selector">
+            <option value="1">1d</option>
+            <option value="2">2d</option>
+            <option value="3">3d</option>
+        </select>
+    </div>
 
-<div id="controls">
-    <button class="btn active" data-mode="basic">Basic</button>
-    <button class="btn" data-mode="mul">Multiplication</button>
-    <button class="btn" data-mode="mental">Mental</button>
-    <select id="mul-digits">
-        <option value="2">2d</option>
-        <option value="3" selected>3d</option>
-        <option value="4">4d</option>
-    </select>
-</div>
+    <div id="question"></div>
+    <input type="number" id="answer" inputmode="numeric" autocomplete="off">
+    
+    <div id="streak">0</div>
+    <div class="key-hint">↵ skip</div>
 
-<div id="question" title="Tap to skip"></div>
-<input type="text" id="answer" autocomplete="off">
-<div id="streak">0</div>
-<div class="hint">Typing auto-checks. Tap question to skip.</div>
+    <script>
+        let a, b, correctAnswer, operation;
+        let digits1 = 1;
+        let digits2 = 1;
+        let selectedOp = '×';
+        let streak = 0;
+        let bestStreak = localStorage.getItem('bestStreak') || 0;
+        let startTime = Date.now();
+        let questionStartTime = Date.now();
+        let fastestTime = Infinity;
 
-<script>
-let currentMode='basic', streak=0, correctAnswer, isNumericAnswer=true, mulDigits=3;
-
-// Set day/night theme
-function updateTheme(){
-    const hour=new Date().getHours();
-    document.body.classList.remove('day','night');
-    document.body.classList.add(hour>=6 && hour<19?'day':'night');
-}
-updateTheme();
-
-const modes={
-    basic:()=>{ 
-        const ops=['+','−','÷'], op=ops[Math.floor(Math.random()*ops.length)];
-        const a=Math.floor(Math.random()*90)+10, b=Math.floor(Math.random()*90)+10;
-        let question, answer;
-        switch(op){
-            case '+': question=`${a} + ${b}`; answer=a+b; break;
-            case '−': const [x,y]=a>b?[a,b]:[b,a]; question=`${x} − ${y}`; answer=x-y; break;
-            case '÷': const c=Math.floor(Math.random()*9)+1; const d=c*(Math.floor(Math.random()*9)+1); question=`${d} ÷ ${c}`; answer=d/c; break;
+        function getRandomNumber(digits) {
+            const min = digits === 1 ? 1 : Math.pow(10, digits - 1);
+            const max = Math.pow(10, digits) - 1;
+            return Math.floor(Math.random() * (max - min + 1)) + min;
         }
-        return {question, answer, numeric:true};
-    },
-    mul:()=>{ 
-        const min=Math.pow(10,mulDigits-1), max=Math.pow(10,mulDigits)-1;
-        const a=Math.floor(Math.random()*(max-min+1))+min;
-        const b=Math.floor(Math.random()*(max-min+1))+min;
-        return {question:`${a} × ${b}`, answer:a*b, numeric:true};
-    },
-    mental:()=>{ const n=Math.floor(Math.random()*25)+1; return {question:`${n}²`, answer:n*n, numeric:true}; }
-};
 
-function generateQuestion(){
-    const res=modes[currentMode]();
-    document.getElementById('question').textContent=res.question;
-    correctAnswer=res.answer; isNumericAnswer=res.numeric;
-    const q=document.getElementById('question'); q.style.animation='none'; q.offsetHeight; q.style.animation=null;
-}
+        function getOperation() {
+            if (selectedOp === 'mix') {
+                const ops = ['×', '+', '-', '÷'];
+                return ops[Math.floor(Math.random() * ops.length)];
+            }
+            return selectedOp;
+        }
 
-function checkAnswer(val){ 
-    if(isNumericAnswer) return Math.abs(parseFloat(val)-parseFloat(correctAnswer))<0.01;
-    return val.toLowerCase().trim()===correctAnswer.toString().toLowerCase();
-}
+        function generateQuestion() {
+            a = getRandomNumber(digits1);
+            b = getRandomNumber(digits2);
+            operation = getOperation();
+            
+            // Adjust for division to avoid decimals
+            if (operation === '÷') {
+                correctAnswer = b;
+                a = b * getRandomNumber(digits1);
+            } else {
+                switch(operation) {
+                    case '×': correctAnswer = a * b; break;
+                    case '+': correctAnswer = a + b; break;
+                    case '-': 
+                        // Ensure positive result
+                        if (a < b) [a, b] = [b, a];
+                        correctAnswer = a - b; 
+                        break;
+                }
+            }
+            
+            const questionEl = document.getElementById('question');
+            questionEl.textContent = `${a} ${operation} ${b}`;
+            questionEl.classList.remove('new');
+            void questionEl.offsetWidth; // Force reflow
+            questionEl.classList.add('new');
+            
+            questionStartTime = Date.now();
+        }
 
-function updateStreak(correct){ 
-    streak=correct?streak+1:0; 
-    const el=document.getElementById('streak'); 
-    el.textContent=streak; 
-    el.className=streak>10?'fire':streak>0?'active':'';
-}
+        function updateStreak(correct) {
+            if (correct) {
+                streak++;
+                if (streak > bestStreak) {
+                    bestStreak = streak;
+                    localStorage.setItem('bestStreak', bestStreak);
+                }
+            } else {
+                streak = 0;
+            }
+            
+            const streakEl = document.getElementById('streak');
+            if (streak > 0) {
+                streakEl.textContent = streak;
+                streakEl.classList.add('active');
+                if (streak === bestStreak && streak > 5) {
+                    streakEl.classList.add('high');
+                }
+            } else {
+                streakEl.textContent = '0';
+                streakEl.classList.remove('active', 'high');
+            }
+        }
 
-function flashResult(correct){ 
-    document.body.classList.add(correct?'correct':'wrong'); 
-    setTimeout(()=>document.body.classList.remove('correct','wrong'),150); 
-}
+        function flashBackground() {
+            document.body.classList.add('correct');
+            setTimeout(() => document.body.classList.remove('correct'), 200);
+        }
 
-// Input instant validation
-const answerInput=document.getElementById('answer');
-answerInput.addEventListener('input',function(){
-    const val=this.value.trim();
-    if(val==='') return;
-    if(isNumericAnswer && val.length < correctAnswer.toString().length) return;
-    if(checkAnswer(val)){
-        flashResult(true); updateStreak(true); this.value=''; generateQuestion();
-    } else {
-        flashResult(false); updateStreak(false); this.value='';
-    }
-});
+        function updateTimer() {
+            const elapsed = Math.floor((Date.now() - startTime) / 1000);
+            const mins = Math.floor(elapsed / 60);
+            const secs = elapsed % 60;
+            document.getElementById('time').textContent = 
+                mins > 0 ? `${mins}:${secs.toString().padStart(2, '0')}` : `${secs}s`;
+        }
 
-// Tap question to skip
-document.getElementById('question').addEventListener('click',()=>{
-    generateQuestion();
-});
+        const input = document.getElementById('answer');
+        const d1Select = document.getElementById('digits1');
+        const d2Select = document.getElementById('digits2');
+        const opSelect = document.getElementById('op');
 
-// Mode buttons
-document.querySelectorAll('[data-mode]').forEach(btn=>{
-    btn.addEventListener('click',function(){
-        document.querySelectorAll('[data-mode]').forEach(b=>b.classList.remove('active'));
-        this.classList.add('active');
-        currentMode=this.dataset.mode;
-        document.getElementById('mul-digits').style.display=currentMode==='mul'?'inline-block':'none';
-        streak=0; updateStreak(false); generateQuestion(); answerInput.focus();
-    });
-});
+        d1Select.addEventListener('change', function() {
+            digits1 = parseInt(this.value);
+            input.value = '';
+            input.classList.remove('wrong', 'correct');
+            generateQuestion();
+            input.focus();
+        });
 
-// Multiplication digits selector
-document.getElementById('mul-digits').addEventListener('change',function(){ mulDigits=parseInt(this.value); generateQuestion(); answerInput.focus(); });
+        d2Select.addEventListener('change', function() {
+            digits2 = parseInt(this.value);
+            input.value = '';
+            input.classList.remove('wrong', 'correct');
+            generateQuestion();
+            input.focus();
+        });
 
-// Mobile optimizations
-document.addEventListener('touchmove', e=>e.preventDefault(),{passive:false});
-let lastTouchEnd=0;
-document.addEventListener('touchend',e=>{ const now=Date.now(); if(now-lastTouchEnd<=300) e.preventDefault(); lastTouchEnd=now; }, false);
-answerInput.addEventListener('blur', e=>{ if(!e.relatedTarget || !e.relatedTarget.classList.contains('btn')) setTimeout(()=>answerInput.focus(),10); });
+        opSelect.addEventListener('change', function() {
+            selectedOp = this.value;
+            input.value = '';
+            input.classList.remove('wrong', 'correct');
+            generateQuestion();
+            input.focus();
+        });
 
-// Initialize
-generateQuestion();
-answerInput.focus();
-</script>
+        input.addEventListener('input', function() {
+            const userAnswer = parseInt(this.value);
+            
+            if (this.value && userAnswer === correctAnswer) {
+                const timeToAnswer = Date.now() - questionStartTime;
+                if (timeToAnswer < fastestTime) {
+                    fastestTime = timeToAnswer;
+                }
+                
+                this.classList.add('correct');
+                updateStreak(true);
+                flashBackground();
+                
+                setTimeout(() => {
+                    this.value = '';
+                    this.classList.remove('wrong', 'correct');
+                    generateQuestion();
+                }, 150);
+            } else if (this.value && userAnswer !== correctAnswer && this.value.length >= correctAnswer.toString().length) {
+                this.classList.add('wrong');
+                updateStreak(false);
+                setTimeout(() => {
+                    this.value = '';
+                    this.classList.remove('wrong');
+                }, 300);
+            }
+        });
 
+        // Skip question on Enter with empty input
+        input.addEventListener('keydown', function(e) {
+            if (e.key === 'Enter' && this.value === '') {
+                updateStreak(false);
+                generateQuestion();
+            }
+        });
+
+        // Initialize
+        generateQuestion();
+        input.focus();
+        setInterval(updateTimer, 1000);
+
+        // Keep focus on mobile
+        input.addEventListener('blur', function(e) {
+            if (!e.relatedTarget || (!e.relatedTarget.classList.contains('digit-selector') && !e.relatedTarget.classList.contains('op-selector'))) {
+                setTimeout(() => this.focus(), 10);
+            }
+        });
+
+        // Keyboard shortcuts
+        document.addEventListener('keydown', function(e) {
+            if (e.key === 'r' && e.metaKey) {
+                e.preventDefault();
+                streak = 0;
+                updateStreak(false);
+                generateQuestion();
+            }
+        });
+    </script>
 </body>
 </html>
