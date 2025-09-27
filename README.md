@@ -14,5 +14,4 @@ A sleek math workout app to sharpen your skills.
 - Click the question to skip
 - Use the keyboard to answer
 
----
-Enjoy the challenge! 🚀
+-----------------------
