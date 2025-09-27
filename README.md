@@ -14,4 +14,4 @@ A sleek math workout app to sharpen your skills.
 - Click the question to skip
 - Use the keyboard to answer
 
-## Made By AI.
+-----------------------
