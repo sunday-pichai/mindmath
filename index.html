@@ -65,6 +65,7 @@
             letter-spacing: 0.05em;
             transition: transform 0.2s ease;
             margin-bottom: 0.5rem;
+            cursor: pointer;
         }
 
         #question.new {
@@ -135,14 +136,6 @@
             font-variant-numeric: tabular-nums;
         }
 
-        .key-hint {
-            position: absolute;
-            bottom: 0.5rem;
-            right: 1rem;
-            font-size: 0.7rem;
-            color: #222;
-        }
-
         /* Virtual Keyboard Styles */
         #keyboard {
             display: grid;
@@ -155,14 +148,14 @@
         }
 
         .key {
-            background: #1a1a1a;
-            border: 1px solid #333;
+            background: #000000;
+            border: 1px solid #000000;
             color: #ffffff;
             padding: 1rem 0.5rem;
             font-size: 1.5rem;
             border-radius: 6px;
             cursor: pointer;
-            transition: all 0.2s ease;
+            transition: all 0.2s ease, background 0.3s ease;
             width: 100%;
             text-align: center;
             min-height: 50px;
@@ -171,9 +164,22 @@
             justify-content: center;
         }
 
+        .key.clicked {
+            background: #2a2a2a;
+            transform: scale(1.05);
+            animation: fadeOut 0.3s ease forwards;
+        }
+
+        @keyframes fadeOut {
+            to {
+                background: #1a1a1a;
+                transform: scale(1);
+            }
+        }
+
         .key:hover,
         .key:active {
-            background: #2a2a2a;
+            background: #000000;
             transform: scale(1.05);
         }
 
@@ -208,7 +214,7 @@
                 width: 90vw;
                 padding: 0.5rem;
                 background: rgba(10, 10, 10, 0.9);
-                border-top: 1px solid #333;
+                
             }
             
             .key {
@@ -216,6 +222,7 @@
                 font-size: 1.3rem;
                 min-height: 45px;
             }
+
             
             #streak {
                 position: absolute;
@@ -270,7 +277,6 @@
     <input type="text" id="answer" inputmode="none" autocomplete="off">
     
     <div id="streak">0</div>
-    <div class="key-hint">↵ skip</div>
 
     <div id="keyboard">
         <button class="key" data-key="7">7</button>
@@ -436,15 +442,13 @@
             }
         });
 
-        // Skip question on Enter with empty input
-        input.addEventListener('keydown', function(e) {
-            if (e.key === 'Enter' && this.value === '') {
-                updateStreak(false);
-                generateQuestion();
-            }
+        // Skip question on click
+        document.getElementById('question').addEventListener('click', function() {
+            updateStreak(false);
+            generateQuestion();
         });
 
-        // Virtual keyboard functionality
+        // Virtual keyboard functionality with fade-out effect
         document.querySelectorAll('.key').forEach(key => {
             key.addEventListener('click', () => {
                 const val = key.dataset.key;
@@ -453,7 +457,9 @@
                 } else {
                     input.value += val;
                 }
+                key.classList.add('clicked');
                 input.dispatchEvent(new Event('input'));
+                setTimeout(() => key.classList.remove('clicked'), 300);
             });
         });
 
